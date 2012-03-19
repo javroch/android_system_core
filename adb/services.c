@@ -26,6 +26,10 @@
 #include "adb.h"
 #include "file_sync_service.h"
 
+#define ROOT_ACCESS_PROPERTY "persist.sys.root_access"
+#define ROOT_ACCESS_DEFAULT "0"
+#define ROOT_SETTINGS_PROPERTY "ro.root.settings"
+
 #if ADB_HOST
 #  ifndef HAVE_WINSOCK
 #    include <netinet/in.h>
@@ -127,9 +131,9 @@ void restart_root_service(int fd, void *cookie)
             return;
         }
 
-        property_get("persist.sys.root_access", value, "1");
+        property_get(ROOT_ACCESS_PROPERTY, value, ROOT_ACCESS_DEFAULT);
         property_get("ro.build.type", build_type, "");
-        property_get("ro.root.settings", root_settings, "");
+        property_get(ROOT_SETTINGS_PROPERTY, root_settings, "");
 
         if (strcmp("1", root_settings) == 0 && strcmp(build_type, "eng") != 0 && (atoi(value) & 2) != 2) {
             snprintf(buf, sizeof(buf), "root access is disabled by system setting - enable in settings -> development options\n");
