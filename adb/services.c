@@ -26,6 +26,10 @@
 #include "adb.h"
 #include "file_sync_service.h"
 
+#define ROOT_ACCESS_PROPERTY "persist.sys.root_access"
+#define ROOT_ACCESS_DEFAULT "0"
+#define ROOT_SETTINGS_PROPERTY "ro.root.settings"
+
 #if ADB_HOST
 #  ifndef HAVE_WINSOCK
 #    include <netinet/in.h>
@@ -111,6 +115,8 @@ void restart_root_service(int fd, void *cookie)
 {
     char buf[100];
     char value[PROPERTY_VALUE_MAX];
+    char build_type[PROPERTY_VALUE_MAX];
+    char root_settings[PROPERTY_VALUE_MAX];
 
     if (getuid() == 0) {
         snprintf(buf, sizeof(buf), "adbd is already running as root\n");
@@ -120,6 +126,17 @@ void restart_root_service(int fd, void *cookie)
         property_get("ro.debuggable", value, "");
         if (strcmp(value, "1") != 0) {
             snprintf(buf, sizeof(buf), "adbd cannot run as root in production builds\n");
+            writex(fd, buf, strlen(buf));
+            adb_close(fd);
+            return;
+        }
+
+        property_get(ROOT_ACCESS_PROPERTY, value, ROOT_ACCESS_DEFAULT);
+        property_get("ro.build.type", build_type, "");
+        property_get(ROOT_SETTINGS_PROPERTY, root_settings, "");
+
+        if (strcmp("1", root_settings) == 0 && strcmp(build_type, "eng") != 0 && (atoi(value) & 2) != 2) {
+            snprintf(buf, sizeof(buf), "root access is disabled by system setting - enable in settings -> development options\n");
             writex(fd, buf, strlen(buf));
             adb_close(fd);
             return;
