@@ -26,9 +26,9 @@
 #include "adb.h"
 #include "file_sync_service.h"
 
-#define ROOT_ACCESS_PROPERTY "persist.sys.root_access"
+#define ROOT_ACCESS_PROPERTY "persist.sys.clean.root"
 #define ROOT_ACCESS_DEFAULT "0"
-#define ROOT_SETTINGS_PROPERTY "ro.root.settings"
+#define ROOT_SETTINGS_PROPERTY "ro.clean.root"
 
 #if ADB_HOST
 #  ifndef HAVE_WINSOCK
